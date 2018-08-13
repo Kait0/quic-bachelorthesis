@@ -1,0 +1,13 @@
+#!/bin/bash
+timestamp() {
+  date +"%T"
+}
+timestamp
+while IFS='' read -r line || [[ -n "$line" ]]; do
+        cd $HOME/tls_perf
+        ./tls_perf -x -3 -u $line -p 443 >> $HOME/top100ktls13.txt
+	echo "Next"
+done < "$1"
+echo "Done"
+timestamp
+

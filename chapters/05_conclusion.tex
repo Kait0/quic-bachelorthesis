@@ -1,0 +1,104 @@
+% !TeX root = ../main.tex
+\chapter{Conclusion and Discussion}\label{chapter:conlusion}
+
+\noindent\textbf{Conclusion}\\
+This work studied the adoption of TLS 1.3 and evaluated the latency of Google QUIC, TLS 1.2 and TLS 1.3 as well the impact of IPv6 on those protocols. The following research questions were answered:
+
+
+\begin{QandA}
+   
+   \item [RQ 1:] How many websites adopted TLS 1.3 already?
+        \begin{answered}
+        Out of the Alexa Top 1000 list at least 10,7\% of the websites support TLS 1.3 (on 27.06.2018).\\
+        Out of the Alexa Top 100.000 at least 15,9\% of the websites support TLS 1.3 (between 19.07.2018 and 25.07.2018).
+   		\end{answered}
+   \item [RQ 2:] How much faster/slower does TCP/TLS 1.3 connect compared to TCP/TLS 1.2?
+   		\begin{answered}
+   		TLS 1.3 connects approximately \textasciitilde 10ms faster than TLS 1.2 \textasciitilde 80\% of the time in both test environments (see \ref{section:target_selection}) while outperforming TLS 1.2 in almost 99\% of the cases.
+   		TLS connection establishment times between IPv6 and IPv4 were comparable.
+   		\end{answered}
+   \item [RQ 3:] How much faster/slower does QUIC connect compared to TCP/TLS 1.2?
+		\begin{answered}
+		Depending on the test environment:
+		QUIC had a performance advantage of \textasciitilde 30 ms over TLS 1.2 \textasciitilde 60\% of the time and an advantage of \textasciitilde 10 ms \textasciitilde 40\% of the time in one of our measurements.
+		On the second test environment QUIC had a performance advantage of \textasciitilde 5 ms \textasciitilde 40\% of the time and \textasciitilde 20 ms \textasciitilde 60\% of the time.
+		Also on the second test environment QUIC gains a \textasciitilde 20 ms advantage \textasciitilde 90 \% of the time with IPv6.
+		This change in performance might be a result of fewer websites being measured.				
+		QUIC also outperformed TLS 1.2 in almost 99\% of the tests.		
+   		\end{answered}
+   \item [RQ 4:] How much faster/slower does QUIC connect compared to TCP/TLS 1.3?
+        \begin{answered}
+        QUIC has a performance advantage of \textasciitilde 10 ms over TLS 1.3 \textasciitilde 90\% of the time in the first test environment.
+        On the second test environment QUIC has an advantage of \textasciitilde 2 ms  \textasciitilde 99\% of the time.
+        QUIC outperforms TLS 1.3 in \textasciitilde 99\% of the test results.
+        IPv6 again did not show any significant change in the result compared to IPv4.
+   		\end{answered}
+\end{QandA}
+
+\noindent\textbf{Limitations}\\
+The results in this thesis have several limitations. To start with all measurements where done from two vantage points in Munich Germany. The data analysed therefore does not have geographical diversity.\\
+The second limitation resulting from the first is that websites were counted as not supporting TLS 1.3 if it was not possible to connect to the website within a 30 second time-out frame.
+Therefore websites which were very slow to connect to or were unreachable from our vantage point are not counted as supporting TLS 1.3.
+Lastly the amount of different websites within Alexa Top 1 Million that support both TLS 1.3 and Google QUIC is only 3.
+Therefore the sample size and diversity of the data comparing TLS 1.3 and Google QUIC  is very low.\\
+
+\noindent\textbf{Lessons Learned}\\
+\label{chapter:lessons_learned}
+
+An important lesson we learned was that local computations can have a large impact on the performance of connection protocols.
+For example when we compared protocol performance with programs run in Debug mode or build without optimisations we saw an significant (\textasciitilde 30\%) drop in performance compared to Release mode / compiler optimisations turned to max.
+When trying to set up a Virtual Machine that had an IPv6 connection we ran into a similar problem in a different incarnation.
+When testing the performance of TLS 1.2 on different VM's the connection speed was largely different on different VM's.
+The command we used to test this was:\\
+\verb|curl -o /dev/null -s -w '%{time_appconnect}\n' https://www.youtube.com|\\
+Some VM's had the "correct" performance of 50 ms connection time while others had three times as much (150 ms).
+The problem turned out to be related to crypto libraries.
+The VM's that performed worse had  GnuTLS/3.4.10 installed  while the VM's that had a good performance where running on different versions of OpenSSL.
+The third case was like described in chapter \ref{chapter_performance_evaluation} our two different test environments showed different performance for the TLS protocols.
+Our takeaway from this is that test environments can have a considerable impact on the outcome of measurements and should therefore be optimized as much as possible, documented precisely and ideally test should be run from different test environments.\\
+
+During doing the set up of the emilia VM we had some problems establishing a encrypted TLS connection.
+Thanks to the help of Steffen Ullrich \cite{Link:httpTunnel} we found out that the problem was a proxy and we had to do HTTP tunneling in order to establish a secured connection through the proxy.
+After we successfully established a TLS connection we noticed that the TCP handshake times measured by out program where way to low (\textasciitilde 500 microseconds).
+The cause for this was that the TCP handshake that was measured was the one done with the proxy server.
+We visualized this in figure \ref{fig:Proxy}\\
+
+\begin{figure}[!thb]
+	\centering
+	\includegraphics[width=\textwidth]{data/Plots/"proxy".png}
+	\caption{The impact of Proxys on TCP measurements}
+  	\label{fig:Proxy}
+\end{figure}
+
+Only the first TCP part in figure \ref{fig:Proxy} is measured so the measurement was missing the second part.
+To avoid this we removed the proxy server as it was not necessary.
+Our takeaway from this is that you should omit adding proxies on your connection when evaluating TCP/TLS based protocols.
+The measured TCP times might still be the once to a proxy as Internet Service Providers (ISP) use middle-boxes to split TCP connections. \\
+
+
+After setting up all the programs correctly on the emilia VM we unfortunately could not establish a QUIC connection with any website at first.
+We talked about this problems with the administrators and it turned out to be the firewall who was blocking all UDP connections.
+This firewall only allowed incoming packets when there was an outgoing connections first.
+However UDP is connectionless so no incoming connection was allowed.
+Some firewalls manually track UDP connections to avoid this problem but this one was more strict.
+To solve this problem the VM was moved to another network with a different firewall that allowed UDP connections.
+Firewalls blocking UDP connections could be a challenge for the adoption of IETF QUIC going forward.\\
+
+Libcurl the library that \texttt{tls\_perf} is based on has a mailing list \cite{Link:LibcurlMail}.
+Since we were on that list because of the DNS lookup time problem mentioned in chapter \ref{chapter_performance_evaluation} we noticed a change that was made to the library option that set the TLS version (\verb|CURLOPT_SSLVERSION|).
+Instead of the exact TLS version the option set the minimum TLS version beginning with the next release.
+This could have silently falsified the output of \texttt{tls\_perf} if we wouldn't have noticed and changed the code accordingly.
+Our takeaway from this is that it is useful to keep up with the current development of libraries you are using.\\
+
+
+\textbf{Future Work}\\
+Future research can do measurements from a multitude of vantage points to assess the different protocols form a more global and diverse perspective.
+In this work we measured 1-RTT QUIC. Future work can be done analysing the effect of the 0-RTT feature in QUIC and TLS 1.3.
+We also only looked at QUIC that is deployed in the Internet right now. Future work can analyse the performance of IETF QUIC once the standard is finalized.
+Another opportunity for future work is the analysis of the penetration of TLS 1.3 in the entire Alexa Top 1 Million. 
+This work looked at individual libraries that support TLS 1.3 and Google QUIC. There are also other libraries that support these features. Doing an exhaustive survey of all libraries that support TLS 1.3 and QUIC is left for future work.
+Analysing the impact of Content Delivery Networks on the protocols is another opportunity for future work.\\
+
+\textbf{Acknowledgements}\\
+We would like to thank Thomas Paul and Simon Zelenski for their help with setting up the test environments.
+Furthermore we would like to thank Dmitri Tikhonov, Daniel Stenberg, Sergey Podanev and Steffen Ulrich for their help on technical questions.

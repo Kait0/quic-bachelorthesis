@@ -1,0 +1,183 @@
+% !TeX root = ../main.tex
+\chapter{Reproducibility Considerations}\label{chapter:Reproducibility}
+
+\section{Installation of the programs}
+The first part will be a tutorial on how to set up the different libraries and programs we used to do our tests.
+All measurements were done using a cable connection to avoid delays coming from wireless connections.
+For the analysis we used \textit{Python 3.6} with Anaconda Jupyter Notebook.
+The notebook files are available at \cite{Link:pythonFiles}. 
+Some things such as the hardcoded paths might have to be adjusted to draw the individual plots.
+Table \ref{tab:figures} shows which figure was drawn using which notebook.
+
+\subsection{LS-QUIC client}
+(Part of this information comes from the LSQUIC readme)
+This tutorial is made for Ubuntu 16.04 LTS (code is compiled with gcc version 5.4.0)
+The first step is to download the program from the git repository:
+\begin{lstlisting}
+cd $HOME
+git clone https://github.com/Kait0/lsquic-client.git
+\end{lstlisting}
+
+Change to the directory:
+\begin{lstlisting}
+cd lsquic-client
+git checkout master (if you are not already on it)
+\end{lstlisting}
+
+To build LSQUIC you need CMake, zlib, libevent and BoringSSL (Google QUIC uses the BoringSSL crypto):
+\begin{lstlisting}
+sudo apt-get update
+sudo apt-get install cmake
+sudo apt-get install zlib1g-dev
+sudo apt-get install libevent-dev
+\end{lstlisting}
+
+Installing BoringSSL is a bit more complicated as you have to build it yourself.
+To build BoringSSL you will need to install the Go language.
+\begin{lstlisting}
+sudo apt-get install golang
+cd .. (if you are still in the lsquic-client folder)
+git clone https://boringssl.googlesource.com/boringssl
+cd boringssl
+git checkout chromium-stable
+cmake -DCMAKE_BUILD_TYPE=Release . && make 
+(we want the maximum performance so we turn on optimisations)
+BORINGSSL_SOURCE=$PWD
+mkdir -p $HOME/tmp/boringssl-libs
+cd $HOME/tmp/boringssl-libs
+ln -s $BORINGSSL_SOURCE/ssl/libssl.a
+ln -s $BORINGSSL_SOURCE/crypto/libcrypto.a
+\end{lstlisting}
+
+We will also need a crypto that supports TLS 1.3.
+In our measurements we used OpenSSL 1.1.1.
+You can download OpenSSL from their webpage:
+\begin{lstlisting}
+cd $HOME
+wget https://www.openssl.org/source/openssl-1.1.1-pre8.tar.gz
+tar -xvzf openssl-1.1.1-pre8.tar.gz
+cd openssl-1.1.1-pre8
+./config --release
+make
+make test (optional)
+sudo make install
+\end{lstlisting}
+
+Now that we have the library we can link it to lsquic and build the lsquic library (again we want maximum performance so we compile in release mode)
+\begin{lstlisting}
+cd $HOME/lsquic-client
+(The next two lines are one line.)
+cmake -DBORINGSSL_INCLUDE=$BORINGSSL_SOURCE/include 
+-DBORINGSSL_LIB=$HOME/tmp/boringssl-libs -DDEVEL_MODE=0 .
+make
+\end{lstlisting}
+
+You can test if the installation worked (program should print the server response)
+Be aware that QUIC builds upon UDP so your firewall needs to have that enabled in order to get a working connection:
+\begin{lstlisting}
+./quic_perf -s www.google.com:443 -p /
+\end{lstlisting}
+
+\subsection{tls\_perf}
+
+To install \texttt{tls\_perf} we need to install a version of curl that supports TLS 1.3 (and Openssl 1.1.1 which we installed earlier)
+\begin{lstlisting}
+cd $HOME
+wget https://curl.haxx.se/download/curl-7.61.0.tar.gz
+tar -xvzf curl-7.61.0.tar.gz
+cd curl-7.61.0
+./configure --disable-threaded-resolver 
+(we want the non-threaded DNS resolver since it's slightly faster)
+make
+make test (optional)
+sudo make install
+sudo ldconfig (update libraries so that we get the new OpenSSL)
+\end{lstlisting}
+
+Now that we have all the libraries we can install \texttt{tls\_perf}:
+\begin{lstlisting}
+cd $HOME
+git clone https://github.com/Kait0/tls_perf.git
+cd tls_perf
+make
+\end{lstlisting}
+
+You can test the installation with e.g. :
+\begin{lstlisting}
+./tls_perf -u www.youtube.com -p 443
+\end{lstlisting}
+
+Both programs we used for measurements are now installed.
+
+To collect data with them we used a simple bash script:
+
+\begin{lstlisting}
+#!/bin/bash
+while IFS='' read -r line || [[ -n "$line" ]]; do
+	cd $HOME/lsquic-client
+    ./quic_perf -t -s $line:443 -p / >> $HOME/output.csv
+	cd $HOME/tls_perf
+	./tls_perf -u $line -p 443 >> $HOME/output.csv
+    ./tls_perf -3 -u $line -p 443 >> $HOME/output.csv
+done < "$1"
+\end{lstlisting}
+
+It takes a text file as an argument that should contain the list of websites you want to test.
+The websites need to be separated by a line break \verb|\n|.
+Make sure there are no \verb|\r| at the end of each line because the script won't work if that's the case.
+The script than calls every website with the 3 different protocols and redirects the stdout output into the file output.csv .
+The header we put in the output.csv file is:
+\begin{lstlisting}
+DnsLookupTime;TimeOfMeasurement;Url;Path;Ip;Port;
+ConnectionEstablishmentTime;HttpResponse;Protocol;TcpHandshakeTimeOptional
+\end{lstlisting}
+
+The lists of websites we tested against are available at \cite{Link:WebsiteLists}.\\
+
+To execute the script periodically we used the program cron:
+\begin{lstlisting}
+crontab -e
+(add this line to execute the script every hour)
+0 * * * * $HOME/measureScript websites-29-06.txt
+\end{lstlisting}
+
+\section{Plots}
+
+All CSV files needed to draw the plots are stored in \cite{Link:CSVData} and described in \ref{section:dataset}
+
+\begin{table}[!htb]
+\centering
+\caption{Mapping of Notebooks and Figures}
+\begin{tabular}{| c | c |}
+\hline
+Path to Notebook & Figure\\
+\hline	
+\multirow{16}{*}{\textasciitilde /data/plot\_QUIC.ipynb} & 4.1\\
+& 4.2 \\
+& 4.3 \\
+& 4.4 \\
+& 4.13 \\
+& 4.14 \\
+& 4.15 \\
+& 4.16 \\
+& 4.17 \\
+& 4.18 \\
+& 4.19 \\
+& 4.20 \\
+& 4.21 \\
+& 4.22 \\
+& 4.23 \\
+& 4.24 \\
+\hline
+\multirow{7}{*}{\textasciitilde /data/plot\_TLS13.ipynb} & 4.5 \\
+& 4.6 \\
+& 4.7 \\
+& 4.8 \\
+& 4.9 \\
+& 4.10 \\
+& 4.11 \\
+& 4.12 \\
+\hline	
+\end{tabular}
+\label{tab:figures}
+\end{table}

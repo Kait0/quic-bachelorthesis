@@ -1,0 +1,20 @@
+% !TeX root = ../main.tex
+\chapter{\abstractname}
+
+TCP has been the most prevalent connection establishment protocol in the Internet for a long time.
+Since TCP does not support encryption inherently it later got extended with SSL/TLS.
+This introduced an additional overhead in connection establishment time but ensured backwards compatibility.
+This overhead was of less concern in the past since bandwidth was the limiting factor of the Internet.
+With increasing bandwidth of the Internet the focus shifted back to reducing round trips as connection speed is becoming a limiting factor which can not be improved because the speed of light is constant.
+Over the last years attempts where made to improve TCP such as TCP Fast Open \cite{Link:TCPFastOpen}.
+They did not see widespread adoption.
+In 2012 Google started developing their own Connection Protocol called Quick UDP Internet Connections (QUIC).
+Due to having control over both client and server infrastructures (Chrome, Android, Youtube.com ,Google.com, ...) they were able to deploy their protocol at a large scale and in 2017 as reported by Google an approximately 7\% of the Internet traffic was using the QUIC protocol \cite{DBLP:conf/sigcomm/LangleyRWVKZYKS17}.
+The QUIC protocol is currently going through a standardisation process by the IETF \cite{Link:ietfQuic}.
+This thesis aims to evaluate the connection latency of the Google QUIC protocol as it is deployed on production servers.
+To achieve this we wrote two measurement test to evaluate the connection establishment times of QUIC and TCP/TLS.
+Using these programs we collected data to compare both protocols from two vantage points in Munich Germany.
+We also measured how many websites already adopted the new TLS 1.3 and how the protocol compares to TLS 1.2 and QUIC.
+Furthermore we measured the impact IPv6 had on the connection establishment times of these protocols.
+We find that QUIC connects faster than TLS 1.2 and TLS 1.3 in nearly all cases but the degree depended on the measurement environment.
+TLS 1.3 connected faster than TLS 1.2 in almost all cases and IPv6 had little to no impact on the connection times.

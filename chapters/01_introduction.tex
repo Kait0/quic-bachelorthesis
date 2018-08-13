@@ -1,0 +1,84 @@
+% !TeX root = ../main.tex
+% Add the above to each chapter to make compiling the PDF easier in some editors.
+\chapter{Introduction}\label{chapter:introduction}
+
+\section{Motivation}
+Google QUIC is an Internet protocol developed by Google with the aim to replace the commonly used TCP + TLS protocol.
+As the name suggests one of it's goals is to enable faster connection establishments.
+Google presented this protocol at SIGCOMM 2017 \cite{DBLP:conf/sigcomm/LangleyRWVKZYKS17} stating that they deployed QUIC on their servers and clients at an Internet scale and that an estimated of 7\% of the Internet traffic is using QUIC.
+One goal of this thesis is to analyse the connection latency of QUIC as it is deployed in the Internet and compare it to the TCP + TLS protocol.
+The Internet Engineering Task Force also started working on standardizing the QUIC protocol \cite{Link:ietfQuic}.
+In this thesis we did not study IETF QUIC and focused on Google QUIC as it is used in production scenarios.\\
+Another interesting development in the security protocol area is TLS version 1.3 which is currently an Internet-Draft \cite{ietf-tls-tls13-28}.
+One goal of this thesis is to determine the penetration of TLS 1.3 in the Internet and to evaluate it's latency compared to it's predecessor TLS 1.2 and Google QUIC.\\
+IPv6 has become an Internet Standard in 2017 \cite{Link:IPv6Internet} after being a Draft Standard since 1998 \cite{Link:IPv6Draft} and it has seen increasing adoption over the last years according to Google statistics \cite{Link:IPv6Adoption}.
+Another goal of this thesis is to find out if IPv6 has any influence on the connection establishment times of Google QUIC or TCP/TLS.
+
+\newpage
+
+\section{Research Questions}
+
+Several questions were researched in this work to measure and compare the connection latency of Google QUIC
+as well as the new TLS 1.3 protocol.
+The thesis engaged in following research Questions:
+
+\begin{QandA}
+
+   \item [RQ 1:] How many websites adopted TLS 1.3 already?
+         \begin{answered}
+         TLS 1.3 is currently an Internet-Draft \cite{ietf-tls-tls13-28}. Multiple libraries and websites already started to implement/deploy it.
+         To compare QUIC to TLS 1.3 we need a list of websites that already support it.
+         \end{answered}
+         
+   \item [RQ 2:] How much faster/slower does TCP/TLS 1.3 connect compared to TCP/TLS 1.2?
+   		\begin{answered}
+         TLS 1.3 aims to improve TLS 1.2 in terms of security and connection speed.
+         We want to determine how much faster TLS 1.3 connects.
+         \end{answered}
+         
+   \item [RQ 3:] How much faster/slower does QUIC connect compared to TCP/TLS 1.2?
+         \begin{answered}
+         QUIC aims to replace the TCP/TLS protocol.
+         We are interested to see how much latency reduction QUIC gains compared to TLS 1.2. 
+         \end{answered}
+        
+   \item [RQ 4:] How much faster/slower does QUIC connect compared to TCP/TLS 1.3?
+   		\begin{answered}
+        TCP/TLS 1.3 will likely become the new standard for encryption replacing TCP/TLS 1.2.
+        If QUIC wants to replace TCP it needs to outperform TCP/TLS 1.3 as well.
+        \end{answered}
+\end{QandA}
+
+\newpage
+
+\section{Research Contributions}
+
+The analysis and research in this thesis contribute to the performance evaluation of the Internet protocols Google QUIC, TCP/TLS 1.2 and TCP/TLS 1.3. Furthermore we analysed the adoption of TLS 1.3 and the influence of IPv6 on the protocols.
+
+Our contributions are:
+\begin{enumerate}
+\item We developed one program called \texttt{quic\_perf} to measure the connection establishment times of Google QUIC.
+The DNS lookup code of this program was merged in the LSQUIC test client.
+We also created another program called \texttt{tls\_perf} to measure TCP/TLS 1.2 and TCP/TLS 1.3.
+They are available at  \cite{Link:tls_perfGithub} and \cite{Link:quic_perfGithub}
+\item We measured the adoption of TLS 1.3
+In Alexa Top 1000 at least 10,7\% of websites adopted the protocol.
+In Alexa Top 100.000 at least 15,9\% of websites adopted the protocol.
+For more details see \ref{section:target_selection}.
+\item We compared the latency of TLS 1.3 vs TLS 1.2. 
+TLS 1.3 gains a latency reduction of \textasciitilde 10 ms over TLS 1.2  \textasciitilde 80\% of the time in our measurements. IPv6 had similar results compared to IPv4 , see \ref{section:TLS1_1.2_vs_Tls_1.3}.
+\item We compared the latency of QUIC vs TLS 1.2.
+QUIC had a latency reduction of \textasciitilde 30 ms over TLS 1.2 \textasciitilde 60\% of the time and an advantage of \textasciitilde 10 ms \textasciitilde 40\% of the time in one of the test environments.
+On the second test environment QUIC had an advantage of \textasciitilde 5 ms \textasciitilde 40\% of the time and \textasciitilde 20 ms \textasciitilde 60\% of the time.
+Also on the second test environment QUIC gains a \textasciitilde 20 ms advantage \textasciitilde 90 \% of the time with IPv6.
+For more details see chapter \ref{section:measurement_setup} and \ref{QUIC_vs_TLS_1.2}.
+\item We compared the latency of QUIC vs TLS 1.3.
+QUIC connects \textasciitilde 10 ms faster than TLS 1.3 \textasciitilde 90\% of the time in one test environment and \textasciitilde 2 ms  \textasciitilde 99\% of the time on the second test environment.
+IPv6 had similar results compared to IPv4.
+For more details see \ref{section:QUIC_vs_TLS_1.3}.
+\end{enumerate}
+
+As with other work this thesis also has limitations which are discussed in Chapter \ref{chapter:conlusion} together with the conclusion.
+Several lessons we learned while writing the thesis are explained in chapter \ref{chapter:lessons_learned} and further research opportunities are also outlined in chapter \ref{chapter:conlusion}.\\
+Chapter \ref{chapter:Reproducibility} describes how to reproduce the results shown in this work.\\
+Our methodology is described in chapter \ref{chapter:methodology} an evaluation of our result is done in chapter \ref{chapter_performance_evaluation}.

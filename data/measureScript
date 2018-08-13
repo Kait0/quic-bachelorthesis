@@ -1,0 +1,8 @@
+#!/bin/bash
+while IFS='' read -r line || [[ -n "$line" ]]; do
+	cd $HOME/lsquic-fork
+    ./http_client -t -s $line:443 -p / >> $HOME/output.csv
+	cd $HOME/tls_perf
+	./tls_perf -u $line -p 443 >> $HOME/output.csv
+    ./tls_perf -3 -u $line -p 443 >> $HOME/output.csv
+done < "$1"

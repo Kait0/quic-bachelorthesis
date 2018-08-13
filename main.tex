@@ -1,0 +1,82 @@
+\RequirePackage[l2tabu,orthodox]{nag}
+ 
+%\documentclass[headsepline,footsepline,footinclude=false,fontsize=11pt,paper=a4,listof=totoc,bibliography=totoc,BCOR=12mm,DIV=12]{scrbook} % two-sided
+\documentclass[headsepline,footsepline,footinclude=false,oneside,fontsize=11pt,paper=a4,listof=totoc,bibliography=totoc]{scrbook} % one-sided
+\usepackage{graphicx}
+%path for thesis
+\newcommand*{\MyPath}{../2018-bernhard-bachelors-thesis}
+
+\input{settings}
+\input{logos/tumlogo}
+\usepackage[utf8]{inputenc}
+\usepackage{verbatim}
+\usepackage[T1]{fontenc} 
+\usepackage{newunicodechar} 
+\DeclareUnicodeCharacter{FFFD}{?????}
+\usepackage{biblatex}
+\usepackage{morefloats}
+\usepackage[]{algorithm2e}
+\usepackage{longtable}
+\usepackage{multirow}
+
+\usepackage{listings}
+
+\usepackage{enumitem}
+\newenvironment{QandA}{\begin{enumerate}[label=\bfseries\alph*.]\bfseries}
+                      {\end{enumerate}}
+\newenvironment{answered}{\par\normalfont}{}
+
+
+\addbibresource{bibliography.bib}
+
+\newcommand*{\getUniversity}{Technische Universität München}
+\newcommand*{\getFaculty}{Department of Informatics}
+\newcommand*{\getTitle}{Measuring Google QUIC Connection Establishment Times}
+\newcommand*{\getTitleGer}{Google QUIC-Verbindungsaufbauzeiten messen}
+\newcommand*{\getAuthor}{Bernhard Jaeger}
+\newcommand*{\getDoctype}{Bachelor's Thesis in Informatics: Games Engineering}
+\newcommand*{\getSupervisor}{Prof. Dr. Jörg Ott}
+\newcommand*{\getAdvisor}{Dr. Vaibhav Bajpai}
+\newcommand*{\getSubmissionDate}{15.08.2018}
+\newcommand*{\getSubmissionLocation}{Munich}
+
+\newcommand{\cdns}{content delivery networks}
+\newcommand{\cdn}{content delivery network}
+\newcommand{\Cdns}{Content delivery networks}
+\newcommand{\Cdn}{Content delivery network}
+\newcommand{\CDNs}{Content Delivery Networks}
+\newcommand{\CDN}{Content Delivery Network}
+\begin{document}
+
+% Set page numbering to avoid "destination with the same identifier has been already used" warning for cover page.
+% (see https://en.wikibooks.org/wiki/LaTeX/Hyperlinks#Problems_with_Links_and_Pages).
+\pagenumbering{alph}
+
+\input{pages/cover}
+
+\frontmatter{}
+\input{pages/title}
+\input{pages/disclaimer}
+%\input{pages/acknowledgements}
+\input{pages/abstract}
+\microtypesetup{protrusion=false}
+\tableofcontents{}
+\microtypesetup{protrusion=true}
+
+\mainmatter{}
+
+\input{chapters/01_introduction}
+\input{chapters/02_relatedwork}
+\input{chapters/03_methodology.tex}
+\input{chapters/04_performance_evaluation.tex}
+\input{chapters/05_conclusion}
+\input{chapters/06_reproducibility}
+\appendix{}
+
+\microtypesetup{protrusion=false}
+\listoffigures{}
+\listoftables{}
+\microtypesetup{protrusion=true}
+
+\printbibliography
+\end{document}

@@ -1,0 +1,269 @@
+% !TeX root = ../main.tex
+\chapter{Methodology}
+\label{chapter:methodology}
+
+\section{Design and Implementation}
+
+\subsection{tls\_perf}
+\label{section:tls_perf}
+
+To compare the latency of QUIC with TCP we need to look at TCP with TLS since QUIC is an encrypted protocol.
+Therefore we wrote a program that evaluates TLS 1.2 and the new TLS 1.3.
+Originally we planned to write an extension for the program  \texttt{happy} \cite{Link:happy} used here \cite{DBLP:conf/anrw/BajpaiS16} which already evaluates TCP connections.
+The library we chose to use for the TLS connections was libcurl since it already supported TLS version 1.3.
+However libcurl could not be integrated in the existing code base easily because it is a black box like library that gets initially configured by the user and does the connection internally.
+Therefore we wrote a new program called  \texttt{tls\_perf} \cite{Link:tls_perfGithub}.
+
+The program connects to a given webserver and outputs data about the connection in the following format:\\
+
+\textit{DNS lookup time;Current time;Hostname;Path;IP address;Port;TCP+TLS handshake time in milliseconds;HTTP Response Code;Protocol version;TCP handshake time}\\
+
+The ;Path; part is only here to align the output with the output of the  \texttt{quic\_perf} program introduced later in this chapter.
+Libcurl does not yet support URL parsing therefore the entire URL is saved in the ;Hostname; part and the ;Path; part is empty.
+
+The libcurl library works that you configure your connection using the\\ 
+\texttt{curl\_easy\_setopt(...);} function with different parameters.
+Than you start your connection using \verb|curl_easy_perform(...);|. 
+
+You can see this in this snippet from tls\_perf.
+
+\begin{lstlisting}
+curl_global_init(CURL_GLOBAL_DEFAULT);
+CURL *curl;
+curl = curl_easy_init();
+CURLcode res;
+if(bool4 == 1)
+	curl_easy_setopt(curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+else if (bool6 == 1)
+	curl_easy_setopt(curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V6);
+else
+	curl_easy_setopt(curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_WHATEVER);
+curl_easy_setopt(curl, CURLOPT_URL, url);
+curl_easy_setopt(curl, CURLOPT_DEFAULT_PROTOCOL, "https");
+curl_easy_setopt(curl, CURLOPT_PORT, port);
+curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L);
+if(bool3 == 1)
+	curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_3 
+| CURL_SSLVERSION_MAX_TLSv1_3);
+else
+	curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2 
+| CURL_SSLVERSION_MAX_TLSv1_2);
+curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data); 
+res = curl_easy_perform(curl);
+\end{lstlisting}
+
+First we initialise the library globally. 
+After that we initialise the individual curl handle curl.
+A program can have multiple such handles for multiple connections but we only use one here.
+After that we configure the handle/connection with the \verb|curl_easy_setopt()| function setting url, port, timeout and so on.
+The option \verb|CURLOPT_WRITEFUNCTION| expects a function that will handle the server response.
+In our case the function \verb|write_data| simply returns discarding the server response as it is not relevant for us.
+Finally \verb|curl_easy_perform(curl)| executes the connection as configured.
+The library logs meta data about the connection which you can access after the connection finished using the \verb|curl_easy_getinfo(...)| function.
+For example we used \verb|curl_easy_getinfo(curl, CURLINFO_NAMELOOKUP_TIME, &connect_dns);| to retrieve the DNS lookup time.
+Libcurl logs these values amongst other things \cite{Link:curl_getinfo}:
+\begin{lstlisting}
+curl_easy_perform()
+    |
+    |--NAMELOOKUP
+    |--|--CONNECT
+    |--|--|--APPCONNECT
+    |--|--|--|--PRETRANSFER
+    |--|--|--|--|--STARTTRANSFER
+    |--|--|--|--|--|--TOTAL
+    |--|--|--|--|--|--REDIRECT
+\end{lstlisting}
+
+\texttt{NAMELOOKUP} is the time until DNS lookup is completed, \texttt{CONNECT} is the time until TCP handshake is completed and \texttt{APPCONNECT} is the time until TLS handshake is completed.
+ \texttt{tls\_perf} uses these 3 values as output but subtracts \texttt{NAMELOOKUP} from \texttt{CONNECT} and \texttt{APPCONNECT} to get the correct TCP and TCP + TLS handshake time.
+ 
+At the end of the program you have to call the functions:
+\begin{lstlisting}
+curl_easy_cleanup(curl);
+curl_global_cleanup();
+\end{lstlisting}
+They clean up and terminate your handles and the library.
+
+To compile  \texttt{tls\_perf} the a libcurl version and a cryptolibrary that both support TLS 1.3 has to be installed on the system.
+In our tests we used libcurl 7.61.0 and OpenSSL 1.1.1 because they provided the required functionality. For more details see chapter  \ref{chapter:conlusion} and \ref{chapter:Reproducibility}.
+
+There also exists a Windows port for  \texttt{tls\_perf} in a separate directory on the git.
+However it is not tested very well and was only used for some initial tests.
+All measurements in this thesis were done using the Linux version.
+The main difference in the Windows version is that the function \verb|getopt()| which is part of unistd.h is not available in windows.
+We therefore included a windows port of \verb|getopt()| made by Ludvik Jerabek \cite{Link:getopt} in the project.
+
+
+ \texttt{tls\_perf} can also be used to determine whether a website supports TLS 1.3.
+When given the options -3 (for TLS 1.3) and -x  the program will try to connect to the given website and print it's URL in stdout if it was possible to connect to it using TLS 1.3.
+Since some websites support TLS 1.3 when accessed with www.example.com but not when accessed with example.com the program will additionally try to connect to "www." + URL if the first connection attempt failed.
+An explanation for this could be that the Contend Delivery Network (CDN) was accessed when connecting to www.example.com which could already support TLS 1.3 but the real server accessed with example.com does not.
+
+
+Because we used  \texttt{tls\_perf} to test a large number of websites the program has a connection time-out of 30 seconds so tests would run in a timely fashion.
+
+\subsection{quic\_perf}
+One goal of this thesis was to create a program that measures Google QUIC performance.
+To accomplish that we needed a QUIC library.
+LiteSpeed QUIC Client Library (LSQUIC) was the library that we chose because it was written in C, had Linux and Windows support, supported the most recent Google QUIC versions and had active developers.
+Other QUIC libraries also exist see Future Work \ref{chapter:conlusion}.
+
+We first tried building LSQUIC on Windows. Doing so we ran into multiple problems such as the cmake script not being able to determine the right compiler name, deprecated functions in the windows port \cite{Link:LSQUICissue10} and a runtime error \cite{Link:LSQUICissue13}. 
+After reporting these bugs to the developers they fixed all of them respectively within days.
+After that we also build LSQUIC on an Ubuntu 16.04 system without running into major problems.
+
+The LSQUIC library comes with a test client that can establish a QUIC connection to a given IP and prints the server response.
+Since this client already provided some functionality that we needed we decided to fork LSQUIC and write an extension for the test client instead of creating a new client.
+
+The LSQUIC library provides some callbacks. 
+The user can define the functions that handle them himself by defining an \verb|struct lsquic_stream_if| as is demonstrated in the test client:
+\begin{lstlisting}
+const struct lsquic_stream_if http_client_if = {
+    .on_new_conn            = http_client_on_new_conn,
+    .on_conn_closed         = http_client_on_conn_closed,
+    .on_new_stream          = http_client_on_new_stream,
+    .on_read                = http_client_on_read,
+    .on_write               = http_client_on_write,
+    .on_close               = http_client_on_close,
+    .on_hsk_done            = http_client_on_hsk_done,
+};
+\end{lstlisting}
+The left part defines the callback while the right part of the equation is the function handling it.
+This struct is than passed to the library alongside other options when initializing it:
+
+\begin{lstlisting}
+struct http_client_ctx client_ctx;
+struct sport_head sports;
+struct prog prog;
+...
+prog_init(&prog, LSENG_HTTP, &sports, &http_client_if, &client_ctx);
+\end{lstlisting}
+
+When doing a test connection with the test client using an example they provided we could not get a response from the server. This problem was due to the server (www.google.com) having different IPs in different regions. The LSQUIC client did not support DNS resolution at this point. You will not be able to establish a connection if you try to connect to an IP-address from another region. After finding out the correct IP-address using a browser add on (DNSLytics) we were able to successfully connect the client to www.google.com using QUIC.
+
+To prevent this problem in the future we decided to implement DNS resolution using the function \verb|getaddrinfo()| in the test client.
+This feature would benefit most users of the LSQUIC client. 
+Therefore we made a pull request which got merged into LSQUIC after some feedback and revisions. \cite{Link:LSQUICpullrequest}
+
+After this we implemented time measurements and renamed the program to \texttt{quic\_perf} to accurately describe it's function.
+Since \texttt{quic\_perf} is an extension of the original \texttt{http\_client} the option -t has to be used to output measurements.
+Otherwise the original behaviour of printing the server response to stdout is preserved.
+The handshake measurement starts when the connection is created:
+\begin{lstlisting}
+if(time_option == 1)
+        timespec_get(&ts_start, TIME_UTC);
+if (NULL == lsquic_engine_connect(...))
+        return -1;
+\end{lstlisting}
+The handshake measurement than ends when the library calls the \texttt{on\_hsk\_done} callback:
+\begin{lstlisting}
+static void http_client_on_hsk_done (lsquic_conn_t *conn, int ok)
+{
+    if(time_option == 1)
+    {
+        timespec_get(&ts_end, TIME_UTC);
+        timespec_diff(&ts_start,&ts_end, &ts_result);
+        number_filled += snprintf(output + number_filled, 500 - number_filled,
+"%.3lf;", (ts_result.tv_nsec/(double) 1000000));
+    }
+    LSQ_INFO("handshake %s", ok ? "completed successfully" : "failed");
+}
+\end{lstlisting}
+The difference between the start and end time is than stored in the output buffer in millisecond format.
+The output is only printed to stdout right before the program successfully terminates to avoid printing incomplete information.
+An example of this would be when the DNS lookup succeeded but the QUIC handshake failed.
+The output format of \texttt{quic\_perf} is similar to the one of  \texttt{tls\_perf}:\\
+
+\textit{DNS lookup time;Current time;Hostname;Path;IP address;Port;QUIC handshake time in milliseconds;HTTP Response Code;Protocol version;}\\
+
+Unlike in libcurl were DNS lookup is done by the library we did and measured the DNS lookup in the client using \verb|getaddrinfo()| for lookup and \verb|timespec_get()| function for measurement due to it's high accuracy and portability.\\
+QUIC is a protocol that is based on UDP. Some firewalls block UDP messages. 
+To help avoid security risk connected to opening UDP ports we implemented an option (-c PORT) to set the port used on your local machine.
+That way only one port needs to be opened in the firewall to establish a successful QUIC connection with \texttt{quic\_perf}:
+This is done by setting the property \verb|sin_port| of the \verb|sockaddr_in struct|:
+\begin{lstlisting}
+struct sockaddr_in sin;
+sin.sin_port = htons(local_port);
+\end{lstlisting}
+
+The function \texttt{htons()} is necessary to convert the port to network byte order.
+
+\section{Target Selection}
+\label{section:target_selection}
+Since TLS 1.3 is a rather new protocol we first needed a list of websites that already supported the protocol.
+We used  \texttt{tls\_perf} in -x mode as described in \ref{section:tls_perf} to determine the websites in Alexa Top 1000
+and Alexa Top 100.000 that supported TLS 1.3 (we could not test the full Alexa Top 1 Million due to time constraints).
+A website is counted as supporting TLS 1.3 if ether their example.com or their www.example.com URL can be accessed using only TLS 1.3 from our vantage point in Munich Germany.
+For limitations of this test see Chapter\ref{chapter:conlusion}.
+We did our measurement of Alexa Top 1000 on 27.06.2018. At this day at least 107 websites do already support TLS 1.3 meaning 10,7\%.
+The measurement of TLS 1.3 support in Alexa Top 100.000 was done in the time-frame of 19.07.2018 to 25.07.2018.
+Out of those websites at least 15918 or 15,918\% support TLS 1.3.
+These two lists (used in different measurements respectively) were the websites we used to compare TLS 1.3 against TLS 1.2.
+
+
+For the QUIC vs TLS 1.2/1.3 comparison we used the website list provided at \cite{Link:QUICsupport} which was measured on 29.06.2018 see \cite{DBLP:conf/pam/RuthPDH18} for more details.
+This list contains all websites out of the Alexa Top 1 Million that support QUIC and have a valid certificate, 267 total.
+All website lists we used are available at \cite{Link:WebsiteLists}.
+
+
+\section{Measurement Setup}
+\label{section:measurement_setup}
+
+To have a stable test environment where we can run test for a longer period of time we set up two virtual machines(VM) at the Technical University of Munich with the help of the administrators of the chair for connected mobility.
+The first VM emilia run on  Ubuntu 16.04.2 LTS having a x86\_64 QEMU Virtual CPU processor with 4 cores,  8 GiB of RAM and 21 GB disk space.
+Emilia had a download speed of roughly 300 Mbit/s when measured.
+This VM has libcurl 7.61.0-Dev and OpenSSL v1.1.1-PreRelease7 installed.
+The second VM vmott17 runs on Ubuntu 16.04.5 LTS having a x86\_64 Intel Xeon processor with 2 cores 2 GiB of RAM and 85GB of RAM and 85 GB of disk space.
+Vmott17 has libcurl 7.61.0 and OpenSSL v1.1.1-PreRelease8 with a Download speed of roughly 900 Mbit/s when measured.
+Both VM's have a cable Internet-connection (to avoid additional latencies that a wireless connection might introduce) with the emilia VM only having IPv4 while the vmott17 VM has an IPv6 connection as well.
+We set up both programs as described in \ref{chapter:Reproducibility}. A focus was to built all the programs and libraries involved with maximum optimisations since not doing so would significantly influence the result, see \ref{chapter:lessons_learned}.
+
+\section{Dataset}
+\label{section:dataset}
+
+Using the VM's described in the previous section we collected a number of datasets.
+All data we collected is available at \cite{Link:CSVData}.
+The data is stored in .csv files (comma separated values) with\\
+\textit{DnsLookupTime;TimeOfMeasurement;Url;Path;p;Port;ConnectionEstablishmentTime;}\\
+\textit{HttpResponse;Protocol;TcpHandshakeTimeOptional}
+as header that describes the format of the data.
+All files are named using this pattern:\\
+\textit{VM\_IPProtocol\_TargetSet\_Notes.csv}\\
+The target set QUIC refers to the 267 websites supporting QUIC, 1kTls13 are the 107 TLS 1.3 websites and 100kTLS13 are the 15918 TLS 1.3 websites, see \ref{section:target_selection}.
+The set 3websites contains the websites www.google.com, www.youtube.com and www.litespeedtech.com.
+
+The table \ref{tab:Files} gives further information about the datasets not included in the filename.
+
+\begin{table}[!htb]
+\centering
+\caption{Description of Datasets}
+\begin{tabular}{| c | c | c |}
+\hline
+filename & number of samples & measured between \\
+\hline
+\textit{emilia\_v4\_1kTls13.csv} & 16630 &  07. and 10.07.2018\\
+\hline
+\textit{emilia\_v4\_3websites\_brokendns.csv} & 355 & 15. and 17.06.2018\\
+\hline
+\textit{emilia\_v4\_100kTls13.csv} & 157292 & 2. and 05.08.2018\\
+\hline
+\textit{emilia\_v4\_QUIC\_one\_measurement.csv} & 626 & 01.07.2018\\
+\hline
+\textit{emilia\_v4\_QUIC\_quic\_perf\_first.csv} & 41895 & 16. and 19.07.2018\\
+\hline
+\textit{emilia\_v4\_QUIC\_tls\_perf\_first.csv} & 63776 & 01. and 07.07.2018\\
+\hline
+\textit{vmott17\_v4\_100kTls13.csv} & 62919 & 04. and 05.08.2018\\
+\hline
+\textit{vmott17\_v4\_QUIC.csv} & 9930 & 05. and 06.08.2018\\
+\hline
+\textit{vmott17\_v6\_100kTls13.csv} & 108893 & 01. and 03.08.2018\\
+\hline
+\textit{vmott17\_v6\_QUIC.csv} & 16451 & 30.07.2018 and 01.08.2018\\
+\hline
+\end{tabular}
+\label{tab:Files}
+\end{table}
+
+The measurement \textit{emilia\_v4\_3websites\_brokendns.csv} still used the underperforming libcurl DNS resolution see \ref{section:dns_lookup_times}.\\  In the measurement \textit{emilia\_v4\_QUIC\_quic\_perf\_first.csv} the \texttt{quic\_perf} test was executed before the  \texttt{tls\_perf} test to see the difference this makes on DNS resolution.\\
+Vice versa in \textit{emilia\_v4\_QUIC\_tls\_perf\_first.csv}\\

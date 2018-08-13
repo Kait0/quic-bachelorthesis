@@ -1,0 +1,16 @@
+3 Methodology
+3.1 Design and Implementation
+	3.1.1 tls_perf
+	3.1.2 quic client
+3.2 Target Selection
+3.3 Measurement Setup
+3.4 Dataset
+
+4 Performance Evaluation
+4.1 DNS Lookup Times
+4.2 TLS 1.2 vs Tls 1.3
+4.3 QUIC vs TLS 1.2
+4.4 QUIC vs TLS 1.3
+
+Standard PC (i440FX + PIIX, 1996)
+VMware Virtual Platform

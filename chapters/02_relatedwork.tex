@@ -1,0 +1,63 @@
+% !TeX root = ../main.tex
+\chapter{Related Work}\label{chapter:Related Work}
+
+Despite the additional overhead that increases latency encrypted connections see increased adoption over the last years \cite{DBLP:conf/conext/NaylorFLGMMPS14}. 
+Adoption numbers vary between different Top Lists and measurement tools.
+One measurement in \cite{DBLP:conf/uss/FeltBKPBT17} using the Mozialla Observatory Tool in 02.2017 showed that 40\% of Alexa Top 1 Million supported HTTPS.
+More popular website had a higher adoption rate with 87\% of Alexa Top 100 having adopted HTTPS in this measurement.
+In contrary the Google Top 100 measured with Googlebot only showed an adoption rate of 54\%.
+These and other inconsistencies of Top Lists like Alexa were investigated in \cite{DBLP:journals/corr/abs-1805-11506}.
+They give several recommendations for using Top Lists such as that the list structure must match the study purpose, the stability of the list should be considered and the list use should be well documented.
+  
+
+Google QUIC is one of the new technologies that tries to mitigate the latency overhead of encrypted connections.
+As Google QUIC is relatively new and frequently changing not a lot of research has been done regarding it.
+One of these researches by Yong Cui \emph{et al.} \cite{DBLP:journals/internet/CuiLLWK17} describes design approaches of QUIC.
+QUIC is a protocol defined on top of UDP that can be implemented in user space which enables faster deployment and update cycles.
+It is a 1 Round Trip Time (RTT) protocol that allows for 0 RRT connections if the connection partners already know each other. 
+QUIC therefore saves two RTT compared to TCP/TLS 1.2 and one RTT when compared to TCP/TLS 1.3.
+QUIC also supports multiplexing of simultaneous HTTP streams and modern loss-recovery mechanisms like F-RTO and Early Retransmit.\\
+The first experimental analysis of QUIC was done by \cite{DBLP:conf/sac/CarlucciCM15} in 2015.
+Their test environment consists of a webserver that only links pictures and Google Chrome on the client site.
+They show that in their experimental setting QUIC (version 21) outperforms HTTP/1.1 over TLS 1.2 in terms of page load times.
+QUIC also achieves a higher goodput for small bottleneck buffer sizes.
+When the network was over-buffered the protocols equally shared the link capacity.\\
+An analysis of the adoption of QUIC in the Wild was done by Jan Rüth \emph{et al.} in \cite{DBLP:conf/pam/RuthPDH18}. 
+They observed that between 2.6\% and 9.1\% of Internet traffic used QUIC depending on the vantage point.
+They also provide weekly statistics about QUIC support in different networks at \cite{Link:QuicStats}.\\
+Examination of the QUIC protocol can be challenging as studies might be outdated before release due to the rapid development.
+In \cite{DBLP:conf/imc/KakhkiJCNM17} they tried to address this challenge.
+They measured QUIC using Google Chrome from both Desktop and mobile environments connecting to an Amazon EC2 webserver with Apache.
+Their findings include that QUIC is unfair when sharing bandwidth with TCP since it increases the congestion window more aggressively.
+In their tests QUIC outperformed TCP + HTTPS in almost every scenario.
+The performance gains are decreased however on older phones from 2013 due to application-layer packet processing and encryption.
+QUIC spends a lot of time in the "Application Limited" state in these mobile environments (58\%) compared to  desktop (7\% of the time) due to QUIC running in userspace process.\\
+The paper \cite{DBLP:conf/icc/MegyesiKM16} from 2016 looked at page loading times comparing HTTP, SPDY and QUIC.
+As other works they used Google Chrome in their test environment on the client side.
+On the server side they installed four different web pages on Google websites.
+Between the two they installed a sharper server to vary network conditions. 
+They concluded that none of the protocols is clearly better than the other two.
+Who performs best is dependent on network conditions.
+On good network conditions all protocols had similar page load times.
+QUIC performed poor in scenarios with high bandwidth and big files to download due to the packet pacing mechanism in QUIC not reaching the maximum network capacity.
+QUIC performed well in scenarios with high RTT and lots of small objects to download. 
+\\
+Page Load Time was also investigated in \cite{DBLP:conf/icc/CookMTH17} comparing HTTP/2 over TCP/TLS vs QUIC.
+They used a tool called perfy that configures and launches Chromium as client and set up servers using GO-Quic and Golang libraries.
+They also had a remote testbed from home connecting to production servers using LAN as well as 4G.
+They saw in their tests that QUIC outperformed TCP/TLS in unstable environments such as wireless mobile networks but for stable environments the performance advantages of QUIC were not so obvious. 
+They showed that QUIC connections are much less sensitive to delay and loss than HTTP/2 connections.
+
+
+The IETF working group states multiple goals for IETF QUIC \cite{Link:ietfQuic}.
+They want to minimize latency costs for applications starting with HTTP/2.
+QUIC should allow multiplexing without the head-of-line blocking problem.
+They want to also achieve that QUIC can be deployed by only making changes to path endpoints.
+Extensions for multipath and forward error correction should be enabled.
+Contrary to Google QUIC which uses it's own crypto IETF QUIC has the goal to provide always secure transport by using the TLS 1.3 standard.
+One challenge they pointed out was that about 3 - 5 \% of networks block UDP \cite{Link:IETFQUICApplicability}.
+They proposed that QUIC applications should therefore be implemented with a fallback option to TCP + TLS 1.3. 
+Lower versions of TLS should not be allowed to prevent downgrade attacks.
+
+\cite{DBLP:conf/networking/BajpaiS15} investigated the impact of IPv6 on connection establishment time of TCP on a global scale.
+They found that most websites had little difference in TCP connection times between IPv4 and IPv6. The once that showed a difference correlated with the Content Delivery Network (CDN) not supporting IPv6.
