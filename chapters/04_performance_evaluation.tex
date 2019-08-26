@@ -8,14 +8,14 @@
 	\centering
 	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=\textwidth]{data/Plots/"VM DNS lookup google".pdf}
+		\includegraphics[width=\textwidth]{data/Plots/"VM DNS lookup google".png}
 		\caption{DNS lookup times to www.google.com}
   		\label{fig:DNSLookupGoogle1}
   	\end{minipage}%
   	\hspace{0.5cm}
   	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=\textwidth]{data/Plots/"VM DNS lookup youtube".pdf}
+		\includegraphics[width=\textwidth]{data/Plots/"VM DNS lookup youtube".png}
 		\caption{DNS lookup times to www.youtube.com}
   		\label{fig:DNSLookupYoutube1}
   	\end{minipage}
@@ -36,15 +36,15 @@ Daniel Stenberg also made fix for the threaded resolver of libcurl see  \cite{Li
 	\centering
 	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=\textwidth]{data/Plots/"DNS_lookup_all_curl_First".pdf}
-		\captionof{figure}{DNS Lookup times with the curl program being called first}
+		\includegraphics[width=\textwidth]{data/Plots/"DNS_lookup_all_curl_First".png}
+		\captionof{figure}{DNS Lookup times with the tls\_perf being called first}
   		\label{fig:DNSCurlFirst}
   	\end{minipage}%
   	\hspace{0.5cm}
   	\begin{minipage}{.45\textwidth}
   		\centering 
-  		\includegraphics[width=\textwidth]{data/Plots/"DNS_lookup_all_QUIC_First".pdf}
-		\captionof{figure}{DNS Lookup times with the LSQUIC program being called first}
+  		\includegraphics[width=\textwidth]{data/Plots/"DNS_lookup_all_QUIC_First".png}
+		\captionof{figure}{DNS Lookup times with the quic\_perf program being called first}
   		\label{fig:DNSLSQUICFirst} 	
   	\end{minipage}
 \end{figure}
@@ -62,14 +62,14 @@ Figure \ref{fig:DNSCurlFirst} plots the DNS data from \textit{emilia\_v4\_QUIC\_
 	\centering
 	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=\textwidth]{data/Plots/"emilia_v4_1kTls13_allsites".pdf}
+		\includegraphics[width=\textwidth]{data/Plots/"emilia_v4_1kTls13_allsites".png}
 		\caption{Latency of 107 sites in Alexa Top 1000 that support TLS 1.3}
   		\label{fig:LatencyTLS13Top1k}
   	\end{minipage}%
   	\hspace{0.5cm}
   	\begin{minipage}{.45\textwidth}
   		\centering
-  		\includegraphics[width=\textwidth]{data/Plots/"emilia_v4_1kTls13_allsites_difference".pdf}
+  		\includegraphics[width=\textwidth]{data/Plots/"emilia_v4_1kTls13_allsites_difference".png}
 		\caption{Difference between TCP/TLS1.3 and TCP/TLS1.2 in Alexa Top 1000}
   		\label{fig:DiffTls13Tls12}
   	\end{minipage}
@@ -87,14 +87,14 @@ One thing to keep in mind here is that all these websites have presumably very g
 	\centering
 	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=\textwidth]{data/Plots/"emilia_v4_100kTls13_allsites".pdf}
+		\includegraphics[width=\textwidth]{data/Plots/"emilia_v4_100kTls13_allsites".png}
 		\caption{Latency of 15981 sites in Alexa Top 100.000 that support TLS 1.3 measured with emilia}
   		\label{fig:LatencyTLS13Top100kEmilia}
   	\end{minipage}%
   	\hspace{0.5cm}
   	\begin{minipage}{.45\textwidth}
   		\centering
-  		\includegraphics[width=\textwidth]{data/Plots/"emilia_v4_100kTls13_allsites_difference".pdf}
+  		\includegraphics[width=\textwidth]{data/Plots/"emilia_v4_100kTls13_allsites_difference".png}
 		\caption{Difference between TCP/TLS1.3 and TCP/TLS1.2 in Alexa Top 100.000 measured with emilia}
   		\label{fig:DiffTls13Tls12Top100kEmilia}
   	\end{minipage}
@@ -108,14 +108,14 @@ Again the performance advantage of TLS 1.3 is \textasciitilde 10 ms \textasciiti
 	\centering
 	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=\textwidth]{data/Plots/"vmott17_v4_100kTls13_allsites".pdf}
+		\includegraphics[width=\textwidth]{data/Plots/"vmott17_v4_100kTls13_allsites".png}
 		\caption{Latency of 15981 sites in Alexa Top 100.000 that support TLS 1.3 measured with vmott17}
   		\label{fig:LatencyTLS13Top100kVmott17}
   	\end{minipage}%
   	\hspace{0.5cm}
   	\begin{minipage}{.45\textwidth}
   		\centering
-  		\includegraphics[width=\textwidth]{data/Plots/"vmott17_v4_100kTls13_allsites_difference".pdf}
+  		\includegraphics[width=\textwidth]{data/Plots/"vmott17_v4_100kTls13_allsites_difference".png}
 		\caption{Difference between TCP/TLS1.3 and TCP/TLS1.2 in Alexa Top 100.000 measured with vmott17}
   		\label{fig:DiffTls13Tls12Top100kVmott17}
   	\end{minipage}
@@ -135,14 +135,14 @@ Lastly we also looked at the impact of IPv6.
 	\centering
 	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=\textwidth]{data/Plots/"vmott17_v6_100kTls13_allsites".pdf}
+		\includegraphics[width=\textwidth]{data/Plots/"vmott17_v6_100kTls13_allsites".png}
 		\caption{Latency of sites in Alexa Top 100.000 that support TLS 1.3 and IPv6 measured with vmott17 }
   		\label{fig:LatencyTLS13Top100kIPv6Vmott17}
   	\end{minipage}%
   	\hspace{0.5cm}
   	\begin{minipage}{.45\textwidth}
   		\centering
-  		\includegraphics[width=\textwidth]{data/Plots/"vmott17_v6_100kTls13_allsites_difference".pdf}
+  		\includegraphics[width=\textwidth]{data/Plots/"vmott17_v6_100kTls13_allsites_difference".png}
 		\caption{Difference between TCP/TLS1.3 and TCP/TLS1.2 over IPv6 in Alexa Top 100.000 measured with vmott17}
   		\label{fig:DiffTls13Tls12Top100kIPv6Vmott17}
   	\end{minipage}
@@ -157,14 +157,14 @@ The figures \ref{fig:LatencyTLS13Top100kIPv6Vmott17} and \ref{fig:DiffTls13Tls12
 	\centering
 	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=\textwidth]{data/Plots/"emilia_v4_QUIC_allsites".pdf}
+		\includegraphics[width=\textwidth]{data/Plots/"emilia_v4_QUIC_allsites".png}
 		\caption{Latency of QUIC and TLS 1.2 from 267 websites measured over several days on emilia}
   		\label{fig:LatencyEmiliaV4QUIC}
   	\end{minipage}%
   	\hspace{0.5cm}
   	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=\textwidth]{data/Plots/"emilia_v4_QUIC_allsites_difference".pdf}
+		\includegraphics[width=\textwidth]{data/Plots/"emilia_v4_QUIC_allsites_difference".png}
 		\caption{Difference between QUIC and TCP/TLS1.2 on emilia}
   		\label{fig:DiffQuicTLS12}
   	\end{minipage}
@@ -180,7 +180,7 @@ Figure \ref{fig:DiffQuicTLS12} shows that QUIC is around 10 ms  faster than TLS 
 	\centering
 	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=\textwidth]{data/Plots/"vmott17_v4_QUIC_allsites".pdf}
+		\includegraphics[width=\textwidth]{data/Plots/"vmott17_v4_QUIC_allsites".png}
 		\caption{Latency of QUIC and TCP/TLS1.2 on vmott17 with IPv4}
   		\label{fig:LatencyQuicTLS12Ipv4Vmott17}
   		\centering
@@ -188,7 +188,7 @@ Figure \ref{fig:DiffQuicTLS12} shows that QUIC is around 10 ms  faster than TLS 
   	\hspace{0.5cm}
   	\begin{minipage}{.45\textwidth}
   		\centering
-  		\includegraphics[width=\textwidth]{data/Plots/"vmott17_v4_QUIC_allsites_difference".pdf}
+  		\includegraphics[width=\textwidth]{data/Plots/"vmott17_v4_QUIC_allsites_difference".png}
 		\caption{Difference between QUIC and TCP/TLS1.2 on vmott17 with IPv4}
   		\label{fig:DiffQuicTLS12Ipv4Vmott17}
   	\end{minipage}
@@ -203,14 +203,14 @@ Therefore as shown in \ref{fig:DiffQuicTLS12Ipv4Vmott17} the performance advanta
 	\centering
 	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=\textwidth]{data/Plots/"vmott17_v6_QUIC_allsites".pdf}
+		\includegraphics[width=\textwidth]{data/Plots/"vmott17_v6_QUIC_allsites".png}
 		\caption{Latency of QUIC and TCP/TLS1.2 on vmott17 with IPv6}
   		\label{fig:LatencyQuicTLS12Ipv6Vmott17}
   	\end{minipage}%
   	\hspace{0.5cm}
   	\begin{minipage}{.45\textwidth}
   		\centering
-  		\includegraphics[width=\textwidth]{data/Plots/"vmott17_v6_QUIC_allsites_difference".pdf}
+  		\includegraphics[width=\textwidth]{data/Plots/"vmott17_v6_QUIC_allsites_difference".png}
 		\caption{Difference between QUIC and TCP/TLS1.2 on vmott17 with IPv6}
   		\label{fig:DiffQuicTLS12Ipv6Vmott17}
   	\end{minipage}
@@ -234,14 +234,14 @@ The following plots therefore contain little amount of data.
 	\centering
 	\begin{minipage}{.45\textwidth}
 		\centering		
-		\includegraphics[width=\textwidth]{data/Plots/"emilia_v4_QUIC_3websites".pdf}
+		\includegraphics[width=\textwidth]{data/Plots/"emilia_v4_QUIC_3websites".png}
 		\caption{Latency of all protocols on 3 different sites collected on emilia}
   		\label{fig:LatencyAllProtocolsThreeSitesEmilia}
   	\end{minipage}%
   	\hspace{0.5cm}
   	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=\textwidth]{data/Plots/"emilia_v4_QUIC_3websites_differences".pdf}
+		\includegraphics[width=\textwidth]{data/Plots/"emilia_v4_QUIC_3websites_differences".png}
 		\caption{Difference between QUIC and TCP/TLS1.3 on emilia}
   		\label{fig:DiffQuicTLS13emilia}
 		\end{minipage}
@@ -255,14 +255,14 @@ Here QUIC has an performance advantage of \textasciitilde 10 ms \textasciitilde 
 	\centering
 	\begin{minipage}{.45\textwidth}
 		\centering
-		\includegraphics[width=\textwidth]{data/Plots/"vmott17_v4_QUIC_3websites".pdf}
+		\includegraphics[width=\textwidth]{data/Plots/"vmott17_v4_QUIC_3websites".png}
 		\caption{Latency of all protocols on 3 different sites collected on vmott17}
   		\label{fig:LatencyAllProtocolsThreeSitesVmott17}
   	\end{minipage}%
   	\hspace{0.5cm}
   	\begin{minipage}{.45\textwidth}
   		\centering
-  		\includegraphics[width=\textwidth]{data/Plots/"vmott17_v4_QUIC_3websites_difference".pdf}
+  		\includegraphics[width=\textwidth]{data/Plots/"vmott17_v4_QUIC_3websites_difference".png}
 		\caption{Difference between QUIC and TCP/TLS1.3 on vmott17}
   		\label{fig:DiffQuicTLS13Vmott17}
   	\end{minipage}
@@ -274,14 +274,14 @@ Again as figures \ref{fig:LatencyAllProtocolsThreeSitesVmott17} and \ref{fig:Dif
 	\centering
 	\begin{minipage}{.45\textwidth}
   		\centering
-		\includegraphics[width=\textwidth]{data/Plots/"vmott17_v6_QUIC_3websites".pdf}
+		\includegraphics[width=\textwidth]{data/Plots/"vmott17_v6_QUIC_3websites".png}
 		\caption{Latency of all protocols on 3 different sites collected on vmott17}
   		\label{fig:LatencyAllProtocolsThreeSitesVmott17IPv6}
   	\end{minipage}%
   	\hspace{0.5cm}
   	\begin{minipage}{.45\textwidth}
   		\centering
-  		\includegraphics[width=\textwidth]{data/Plots/"vmott17_v6_QUIC_3websites_difference".pdf}
+  		\includegraphics[width=\textwidth]{data/Plots/"vmott17_v6_QUIC_3websites_difference".png}
 		\caption{Difference between QUIC and TCP/TLS1.3 on vmott17}
   		\label{fig:DiffQuicTLS13Vmott17IPv6}
   	\end{minipage}
